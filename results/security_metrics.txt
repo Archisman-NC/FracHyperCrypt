@@ -1,0 +1,14 @@
+=== Fractional-Order Hyperchaotic Image Cipher Security Metrics ===
+
+[ Information Entropy ]
+Measures the randomness and statistical diffusion of the cipher.
+Original Image Entropy  : 4.8784
+Encrypted Image Entropy : 7.6375 (Target ~7.99)
+
+[ Plaintext Sensitivity (Differential Attack Resistance) ]
+Evaluates the avalanche effect by perturbing exactly 1 bit of the original image.
+NPCR (Number of Pixel Change Rate)      : 0.0100% (Target > 99%)
+UACI (Unified Average Changing Intensity): 0.0000% (Target ~33%)
+
+=== Conclusion ===
+The metrics deviate from ideal random behavior. Review the diffusion/confusion parameters.
