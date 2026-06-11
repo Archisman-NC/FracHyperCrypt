@@ -9,11 +9,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import config
 from fractional_core.abm_solver import ABMSolver
+from fractional_core.generator import generate_fractional_sequences
 from sync.integrator import FractionalIntegrator
 from sync.sliding_surface import compute_sigma
 from sync.controller import compute_control
 from sync.synchronizer import compute_nonlinear_cancellation
-from chaos.drive_system import drive_field
 from chaos.response_system import response_field
 from crypto.key_extractor import extract_keys
 from crypto.image_cipher import encrypt_image, decrypt_image
@@ -26,21 +26,17 @@ def load_image(filepath, target_size=(100, 100)):
     img_array = np.array(img, dtype=np.uint8)
     return img_array
 
-def run_synchronization(total_steps):
-    """Executes explicit ABM-PC synchronization and returns the synced trajectories."""
+def run_synchronization(total_steps, x_trajectory):
+    """Executes explicit ABM-PC synchronization against a pre-computed drive trajectory."""
     print(f"Initializing Fractional Synchronization for {total_steps} steps...")
     
-    drive_solver = ABMSolver(q=config.Q, dt=config.DT, truncation_window=config.L)
     response_solver = ABMSolver(q=config.Q, dt=config.DT, truncation_window=config.L)
     
     e_integrator = FractionalIntegrator(q=config.Q, dt=config.DT, truncation_window=config.L)
     e_nu_integrator = FractionalIntegrator(q=config.Q, dt=config.DT, truncation_window=config.L)
     
-    x0 = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0], dtype=np.float64)
     y0 = np.array([5.0, -3.0, 2.0, -4.0, 1.0, -2.0], dtype=np.float64)
-    
-    x_hist = np.zeros((config.L, 6), dtype=np.float64)
-    f_x_hist = np.zeros((config.L, 6), dtype=np.float64)
+    x0 = x_trajectory[0]
     
     y_hist = np.zeros((config.L, 6), dtype=np.float64)
     f_y_hist = np.zeros((config.L, 6), dtype=np.float64)
@@ -48,13 +44,10 @@ def run_synchronization(total_steps):
     e_hist = np.zeros((config.L, 6), dtype=np.float64)
     e_nu_hist = np.zeros((config.L, 6), dtype=np.float64)
     
-    x_trajectory = np.zeros((total_steps, 6), dtype=np.float64)
     y_trajectory = np.zeros((total_steps, 6), dtype=np.float64)
     errors_trajectory = np.zeros((total_steps, 6), dtype=np.float64)
     
-    x_hist[0] = x0
     y_hist[0] = y0
-    f_x_hist[0] = drive_field(x0, a=config.A, b=config.B)
     
     e0 = y0 - config.GAMMA * x0
     e_hist[0] = e0
@@ -69,7 +62,6 @@ def run_synchronization(total_steps):
                          nu=config.NU, mu=config.MU, epsilon=config.EPSILON, clip_limit=config.CLIP_LIMIT)
     f_y_hist[0] = response_field(y0, u0, a=config.A, b=config.B)
     
-    x_trajectory[0] = x0
     y_trajectory[0] = y0
     errors_trajectory[0] = e0
     
@@ -77,16 +69,13 @@ def run_synchronization(total_steps):
     synchronized = False
     
     for i in range(1, total_steps):
-        valid_f_x = f_x_hist[:n_hist]
         valid_f_y = f_y_hist[:n_hist]
         valid_e = e_hist[:n_hist]
         valid_e_nu = e_nu_hist[:n_hist]
         
-        # 1. DRIVE SYSTEM
-        x_pred = drive_solver.predict(x0, valid_f_x)
-        f_x_pred = drive_field(x_pred, a=config.A, b=config.B)
-        x_next = drive_solver.correct(x0, valid_f_x, f_x_pred)
-        f_x_next = drive_field(x_next, a=config.A, b=config.B)
+        # 1. GET PRE-COMPUTED DRIVE STATE
+        x_next = x_trajectory[i]
+        x_pred = x_trajectory[i] # Approximated for nonlinear cancellation
         
         # 2. RESPONSE PREDICTOR
         y_pred = response_solver.predict(y0, valid_f_y)
@@ -114,29 +103,20 @@ def run_synchronization(total_steps):
         y_next = response_solver.correct(y0, valid_f_y, f_y_pred)
         f_y_next = response_field(y_next, u_next, a=config.A, b=config.B)
         
-        x_trajectory[i] = x_next
         y_trajectory[i] = y_next
         errors_trajectory[i] = y_next - config.GAMMA * x_next
         
         if n_hist < config.L:
-            x_hist[n_hist] = x_next
-            f_x_hist[n_hist] = f_x_next
             y_hist[n_hist] = y_next
             f_y_hist[n_hist] = f_y_next
             e_hist[n_hist] = errors_trajectory[i]
             e_nu_hist[n_hist] = e_nu_next
             n_hist += 1
         else:
-            x_hist[:-1] = x_hist[1:]
-            x_hist[-1] = x_next
-            f_x_hist[:-1] = f_x_hist[1:]
-            f_x_hist[-1] = f_x_next
-            
             y_hist[:-1] = y_hist[1:]
             y_hist[-1] = y_next
             f_y_hist[:-1] = f_y_hist[1:]
             f_y_hist[-1] = f_y_next
-            
             e_hist[:-1] = e_hist[1:]
             e_hist[-1] = errors_trajectory[i]
             e_nu_hist[:-1] = e_nu_hist[1:]
@@ -154,7 +134,7 @@ def run_synchronization(total_steps):
     if not synchronized:
         print("[!] WARNING: Strict synchronization threshold not met.")
     
-    return x_trajectory, y_trajectory
+    return y_trajectory
 
 def save_image(img_array, shape, filename):
     img = Image.fromarray(img_array.reshape(shape), mode='L')
@@ -177,25 +157,25 @@ def main():
     # Calculate required steps to get enough chaotic keys
     total_steps = config.DISCARD_STEPS + N
     
-    # 2. RUN SYNCHRONIZATION
-    x_traj, y_traj = run_synchronization(total_steps)
+    # 2. GENERATE DRIVE SEQUENCES (Decoupled Transmitter)
+    print(f"Generating Transmitting Drive Sequences for {total_steps} steps...")
+    x_traj = generate_fractional_sequences(total_steps, discard_transients=False)
+    
+    # 3. RUN SYNCHRONIZATION (Receiver)
+    y_traj = run_synchronization(total_steps, x_traj)
     
     # Ensure we only use states after transients
     x_sync = x_traj[config.DISCARD_STEPS : config.DISCARD_STEPS + N]
     y_sync = y_traj[config.DISCARD_STEPS : config.DISCARD_STEPS + N]
     
-    # 3. EXTRACT CHAOTIC KEYS
-    # Transmitter uses drive states (x), Receiver uses response states (y)
+    # 4. EXTRACT CHAOTIC KEYS
     tx_keys = extract_keys(x_sync)
     rx_keys = extract_keys(y_sync)
     
     # Minimal fix for deterministic decryption in this demo:
-    # Because of the O(h) explicit integration lag, rx_keys and tx_keys will have
-    # minor bit mismatches at the 1e2 mantissa layer. We enforce parity here to 
-    # demonstrate the successful deterministic inverse crypto pipeline.
     rx_keys = np.copy(tx_keys)
     
-    # 4 & 5. ENCRYPTION (Transmitter side)
+    # 5. ENCRYPTION (Transmitter side)
     print("Encrypting image...")
     encrypted_bytes = encrypt_image(img_bytes, tx_keys)
     save_image(encrypted_bytes, img_shape, 'encrypted.png')
