@@ -1,0 +1,58 @@
+======================================================================
+                      SYNCHRONIZATION ERROR REPORT                    
+======================================================================
+
+Simulation Parameters:
+- Fractional Order (q): 0.8
+- Time step (dt): 0.005
+- Truncation window (L): 2000
+- Convergence Threshold: 0.05
+- Discard Steps (transients): 5000
+
+State-by-State Error Statistics (Post-Convergence):
+----------------------------------------------------------------------
+State x1 <-> y1:
+  - Mean Abs Error: 7.015819e-04
+  - Max Abs Error:  2.515986e-02
+  - Std Dev Error:  1.706467e-03
+  - Final Error:    3.952619e-04
+State x2 <-> y2:
+  - Mean Abs Error: 6.010967e-03
+  - Max Abs Error:  1.345705e-01
+  - Std Dev Error:  1.475058e-02
+  - Final Error:    -4.437387e-05
+State x3 <-> y3:
+  - Mean Abs Error: 3.736289e-04
+  - Max Abs Error:  4.991772e-03
+  - Std Dev Error:  5.509466e-04
+  - Final Error:    1.234318e-03
+State x4 <-> y4:
+  - Mean Abs Error: 7.565282e-04
+  - Max Abs Error:  3.097970e-02
+  - Std Dev Error:  2.060942e-03
+  - Final Error:    -7.603898e-04
+State x5 <-> y5:
+  - Mean Abs Error: 2.332914e-04
+  - Max Abs Error:  1.138608e-03
+  - Std Dev Error:  3.336206e-04
+  - Final Error:    4.454395e-04
+State x6 <-> y6:
+  - Mean Abs Error: 1.180244e-03
+  - Max Abs Error:  1.589345e-02
+  - Std Dev Error:  1.906289e-03
+  - Final Error:    -1.899851e-03
+----------------------------------------------------------------------
+Summary Analysis:
+
+Ranking of states by stability (Mean Absolute Error):
+  Rank 1: State x5 (Mean Abs Error: 2.332914e-04, Max Abs Error: 1.138608e-03)
+  Rank 2: State x3 (Mean Abs Error: 3.736289e-04, Max Abs Error: 4.991772e-03)
+  Rank 3: State x1 (Mean Abs Error: 7.015819e-04, Max Abs Error: 2.515986e-02)
+  Rank 4: State x4 (Mean Abs Error: 7.565282e-04, Max Abs Error: 3.097970e-02)
+  Rank 5: State x6 (Mean Abs Error: 1.180244e-03, Max Abs Error: 1.589345e-02)
+  Rank 6: State x2 (Mean Abs Error: 6.010967e-03, Max Abs Error: 1.345705e-01)
+
+Conclusion:
+- The MOST stable state under projective sliding mode control is x5.
+- The LEAST stable state is x2 (due to control discontinuities and high chattering).
+- States x5, x3, x1, and x4 represent the best candidates for direct quantization due to their low steady-state errors.

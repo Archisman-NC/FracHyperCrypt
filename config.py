@@ -24,3 +24,9 @@ CLIP_LIMIT = 500.0
 SYNC_THRESHOLD = 5e-2
 DISCARD_STEPS = 5000
 GAMMA = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+
+# Execution Mode: "robust" or "paper"
+MODE = "robust"
+
+
+

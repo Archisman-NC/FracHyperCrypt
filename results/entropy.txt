@@ -1,0 +1,11 @@
+=== INFORMATION ENTROPY ANALYSIS REPORT ===
+
+Original Image Entropy:  4.829991 bits
+Theoretical Max:         8.000000 bits
+Percentage of Max:       60.3749%
+
+Encrypted Image Entropy: 7.995364 bits
+Theoretical Max:         8.000000 bits
+Percentage of Max:       99.9421%
+
+Entropy Target (>7.99):  PASSED

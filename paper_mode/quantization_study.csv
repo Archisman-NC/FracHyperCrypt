@@ -1,0 +1,7 @@
+Scale,Key Parity (%),Decryption Success,Sync Robustness (Mean Abs Error)
+1e3,53.9367,False,1.542707e-03
+1e4,9.0617,False,1.542707e-03
+1e5,0.9667,False,1.542707e-03
+1e6,0.3717,False,1.542707e-03
+1e7,0.4017,False,1.542707e-03
+1e8,0.3967,False,1.542707e-03

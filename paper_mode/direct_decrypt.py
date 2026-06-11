@@ -1,40 +1,18 @@
 import numpy as np
+from paper_mode.direct_key_extractor import extract_paper_keys
 
-def encrypt_image(image_bytes, keys):
-    """
-    Encrypts an image using global permutation followed by non-linear
-    forward and backward diffusion modulo 256.
-    """
-    N = len(image_bytes)
-    # 1. Global Permutation using state x1 (keys[:, 0])
-    perm_indices = np.argsort(keys[:N, 0])
-    permuted_bytes = image_bytes[perm_indices].astype(np.int32)
-    
-    # 2. Diffusion using state x4 (keys[:, 3])
-    k = keys[:N, 3].astype(np.int32)
-    
-    # Forward diffusion
-    c_forward = np.zeros(N, dtype=np.int32)
-    curr = 0
-    for i in range(N):
-        curr = (permuted_bytes[i] + k[i] + curr) % 256
-        c_forward[i] = curr
-        
-    # Backward diffusion
-    c_backward = np.zeros(N, dtype=np.int32)
-    curr = 0
-    for i in range(N - 1, -1, -1):
-        curr = (c_forward[i] + k[i] + curr) % 256
-        c_backward[i] = curr
-        
-    return c_backward.astype(np.uint8)
-
-def decrypt_image(cipher_bytes, keys):
+def decrypt_paper(cipher_bytes, states):
     """
     Decrypts the image by reversing the backward and forward diffusion,
     then inverting the permutation.
+    
+    All key sequences and permutation indices are derived directly
+    from the synchronized response trajectories.
     """
     N = len(cipher_bytes)
+    
+    # Extract keys directly from trajectories
+    keys = extract_paper_keys(states)
     k = keys[:N, 3].astype(np.int32)
     c_backward = cipher_bytes.astype(np.int32)
     
@@ -55,7 +33,7 @@ def decrypt_image(cipher_bytes, keys):
             permuted_bytes[i] = (c_forward[i] - k[i] - c_forward[i-1]) % 256
             
     # 3. Reverse Permutation
-    perm_indices = np.argsort(keys[:N, 0])
+    perm_indices = np.argsort(keys[:N, 0], kind='stable')
     inv_perm_indices = np.empty_like(perm_indices)
     inv_perm_indices[perm_indices] = np.arange(N)
     decrypted_bytes = permuted_bytes[inv_perm_indices].astype(np.uint8)

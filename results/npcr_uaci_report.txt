@@ -1,0 +1,7 @@
+=== NPCR & UACI ANALYSIS REPORT ===
+
+NPCR (Number of Pixels Change Rate): 99.687500%
+Target NPCR (>99%):                   PASSED
+
+UACI (Unified Average Changing Intensity): 36.408539%
+Target UACI (~33.46%):                     CHECK

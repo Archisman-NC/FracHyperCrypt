@@ -1,0 +1,11 @@
+=== ADJACENT PIXEL CORRELATION ANALYSIS REPORT ===
+
+Original Correlation:
+Horizontal   = 0.933390
+Vertical     = 0.947109
+Diagonal     = 0.903556
+
+Encrypted Correlation:
+Horizontal   = -0.033719
+Vertical     = -0.011291
+Diagonal     = -0.009731

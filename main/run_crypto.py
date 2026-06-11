@@ -17,6 +17,9 @@ from sync.synchronizer import compute_nonlinear_cancellation
 from chaos.response_system import response_field
 from crypto.key_extractor import extract_keys
 from crypto.image_cipher import encrypt_image, decrypt_image
+from paper_mode.direct_key_extractor import extract_paper_keys
+from paper_mode.direct_encrypt import encrypt_paper
+from paper_mode.direct_decrypt import decrypt_paper
 
 def load_image(filepath, target_size=(100, 100)):
     """Loads image, converts to grayscale, resizes to keep simulation time practical."""
@@ -169,20 +172,34 @@ def main():
     y_sync = y_traj[config.DISCARD_STEPS : config.DISCARD_STEPS + N]
     
     # 4. EXTRACT CHAOTIC KEYS
-    tx_keys = extract_keys(x_sync)
-    rx_keys = extract_keys(y_sync)
+    if getattr(config, 'MODE', 'robust') == 'paper':
+        print("[*] Running in PAPER mode (Direct Quantization, no PRNG/SHA-256)")
+        tx_keys = extract_paper_keys(x_sync)
+        rx_keys = extract_paper_keys(y_sync)
+    else:
+        print("[*] Running in ROBUST mode (SHA-256 seed + PRNG expansion)")
+        tx_keys = extract_keys(x_sync)
+        rx_keys = extract_keys(y_sync)
     
-    # Minimal fix for deterministic decryption in this demo:
-    rx_keys = np.copy(tx_keys)
+    # Verify that independent key generation results in identical keys
+    keys_match = np.array_equal(tx_keys, rx_keys)
+    print(f"[*] Checking key parity between transmitter and receiver: {'MATCHED' if keys_match else 'FAILED'}")
+    assert keys_match, "CRITICAL ERROR: Key mismatch between transmitter and receiver!"
     
     # 5. ENCRYPTION (Transmitter side)
     print("Encrypting image...")
-    encrypted_bytes = encrypt_image(img_bytes, tx_keys)
+    if getattr(config, 'MODE', 'robust') == 'paper':
+        encrypted_bytes = encrypt_paper(img_bytes, x_sync)
+    else:
+        encrypted_bytes = encrypt_image(img_bytes, tx_keys)
     save_image(encrypted_bytes, img_shape, 'encrypted.png')
     
     # 6. DECRYPTION (Receiver side)
     print("Decrypting image...")
-    decrypted_bytes = decrypt_image(encrypted_bytes, rx_keys)
+    if getattr(config, 'MODE', 'robust') == 'paper':
+        decrypted_bytes = decrypt_paper(encrypted_bytes, y_sync)
+    else:
+        decrypted_bytes = decrypt_image(encrypted_bytes, rx_keys)
     save_image(decrypted_bytes, img_shape, 'decrypted.png')
     
     # 7. VALIDATION

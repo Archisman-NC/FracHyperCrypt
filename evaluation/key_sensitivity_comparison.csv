@@ -1,0 +1,4 @@
+Test_Case,Robust_Diff_%,Robust_Entropy_Change,Robust_NPCR_%,Robust_UACI_%,Paper_Diff_%,Paper_Entropy_Change,Paper_NPCR_%,Paper_UACI_%
+1-bit Key Change,93.060302734375,0.00026858754892433723,93.060302734375,44.4805908203125,9.3048095703125,0.00025096643324040713,9.3048095703125,3.0987129959405633
+IC Perturbation (1e-14),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Parameter Perturbation (1e-14),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
