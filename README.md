@@ -51,10 +51,37 @@ Executes the causal explicit synchronization loop, computing control efforts and
 python main/run_sync.py
 ```
 
+### 3. Image Encryption / Decryption Pipeline
+Encrypts and decrypts the standard test image using the active mode.
+```bash
+python main/run_crypto.py
+```
+
+## Testing with Your Own Images
+
+You can encrypt and decrypt any custom image (JPG, PNG, BMP, etc.) using the CLI utility:
+
+```bash
+python main/encrypt_custom.py -i <path_to_image> -m <robust|paper> -s <pixel_dimension>
+```
+
+### Example Usage:
+```bash
+python main/encrypt_custom.py -i images/lena.png -m robust -s 128
+```
+
+### Options:
+* `-i`, `--image`: (Required) Path to the custom image file.
+* `-m`, `--mode`: (Optional) Keystream derivation mode: `'robust'` (SHA-256 + LCG, default) or `'paper'` (Direct Quantization).
+* `-s`, `--size`: (Optional) Resizes the image to `size x size` pixels to keep the fractional synchronization simulation time fast (default: `256`).
+
 ## Generated Outputs
-All simulations save their outputs as high-resolution `.png` files in the `results/` directory:
+Outputs are saved in the `results/` directory:
 * `results/attractor.png` - Phase portraits of the fractional system.
 * `results/sync_errors.png` - Validation of projective synchronization.
+* `results/encrypted.png`, `results/decrypted.png`, `results/comparison.png` - Outputs from the default run.
+* `results/custom_encrypted.png`, `results/custom_decrypted.png`, `results/custom_comparison.png` - Outputs from custom image test runs.
 
 ## Implementation Details
 For a deep dive into the mathematical decisions, including the Short-Memory Principle truncation and the treatment of explicit $O(h)$ causal lag, refer to the `docs/walkthrough.md` generated during development.
+
