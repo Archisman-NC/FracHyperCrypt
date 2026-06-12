@@ -95,7 +95,9 @@ def main():
     plt.tight_layout()
     output_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'results', 'attractor.png')
     plt.savefig(output_path, dpi=300)
+    plt.close()
     print(f"Saved {output_path}")
-    
+
 if __name__ == "__main__":
     main()
+

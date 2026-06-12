@@ -58,6 +58,7 @@ def main():
     # Save figure
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
     print(f"\n[*] Histogram generation successful.")
     print(f"Saved publication-quality figure to: {output_path}")
     print("======================================================")

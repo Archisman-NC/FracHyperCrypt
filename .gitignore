@@ -2,3 +2,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 .DS_Store
+
+# Temporary custom image encryption outputs
+results/custom_*

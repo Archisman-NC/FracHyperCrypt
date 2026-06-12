@@ -228,6 +228,7 @@ def main():
     
     comp_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'results', 'comparison.png')
     plt.savefig(comp_path, dpi=300, bbox_inches='tight')
+    plt.close()
     print(f"Saved side-by-side comparison to {comp_path}")
     print("===============================================================")
 

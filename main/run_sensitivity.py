@@ -215,6 +215,7 @@ def main():
     output_path = os.path.join(base_dir, 'results', 'key_sensitivity.png')
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
     print(f"Saved key sensitivity comparison to: {output_path}")
     print("===============================================================")
 

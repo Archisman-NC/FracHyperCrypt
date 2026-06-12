@@ -46,7 +46,9 @@ def main():
     traj_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'results', 'trajectories_comparison.png')
     plt.tight_layout()
     plt.savefig(traj_path, dpi=300)
+    plt.close()
     print(f"Saved trajectories comparison to {traj_path}")
+
     
     # Plotting Phase Portraits
     fig, axes = plt.subplots(2, 3, figsize=(15, 10))
@@ -86,7 +88,9 @@ def main():
     plt.tight_layout()
     phase_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'results', 'phase_portraits_comparison.png')
     plt.savefig(phase_path, dpi=300)
+    plt.close()
     print(f"Saved phase portraits comparison to {phase_path}")
+
     
     print("=== Validation Complete ===")
 
